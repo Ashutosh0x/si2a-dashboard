@@ -21,20 +21,20 @@ Security teams are drowning in unstructured evidence from multiple sources (CASB
 │                    BigQuery AI Data Lakehouse               │
 ├─────────────────────────────────────────────────────────────┤
 │  Raw Layer (Bronze)                                         │
-│  ├── raw.events_* (CASB/SaaS logs)                         │
-│  ├── raw.support_emails (ticket data)                      │
-│  └── raw.artifacts (Object Table → GCS: PDFs, screenshots) │
+│  ├── raw.events_* (CASB/SaaS logs)                          │
+│  ├── raw.support_emails (ticket data)                       │
+│  └── raw.artifacts (Object Table → GCS: PDFs, screenshots)  │
 ├─────────────────────────────────────────────────────────────┤
 │  Feature Layer (Silver)                                     │
-│  ├── feat.incident_text_embed (embeddings)                 │
-│  ├── feat.policy_embed (policy embeddings)                 │
-│  ├── feat.vx_incident_text (vector index)                  │
-│  └── feat.vx_policy (vector index)                         │
+│  ├── feat.incident_text_embed (embeddings)                  │
+│  ├── feat.policy_embed (policy embeddings)                  │
+│  ├── feat.vx_incident_text (vector index)                   │
+│  └── feat.vx_policy (vector index)                          │
 ├─────────────────────────────────────────────────────────────┤
 │  Gold Layer (Business Logic)                                │
-│  ├── gold.incidents (enriched, linked)                     │
-│  ├── dim.policy_sections (versioned policies)              │
-│  └── marts.incident_daily (time series)                    │
+│  ├── gold.incidents (enriched, linked)                      │
+│  ├── dim.policy_sections (versioned policies)               │
+│  └── marts.incident_daily (time series)                     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
