@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 SI²A - Shadow IT Incident Autopilot Dashboard</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --muted-text: #666;
+            --border-color: #e9ecef;
+            --accent: #667eea;
+            --critical: #dc3545;
+            --high: #fd7e14;
+            --medium: #ffc107;
+            --low: #28a745;
+        }
+
+        body.dark {
+            --bg-gradient-start: #0f172a;
+            --bg-gradient-end: #1f2937;
+            --card-bg: #111827;
+            --text-color: #e5e7eb;
+            --muted-text: #9ca3af;
+            --border-color: #374151;
+            --accent: #60a5fa;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .metric-card h3 {
+            color: var(--muted-text);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-card .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .metric-card .metric-label {
+            color: var(--muted-text);
+            font-size: 0.9rem;
+        }
+
+        .ai-features {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .ai-features h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            transition: border-color 0.3s ease;
+            background: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .feature-card:hover {
+            border-color: #667eea;
+        }
+
+        .feature-card h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card input,
+        .feature-card select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .feature-card button, .chart-toolbar button {
+            background: linear-gradient(135deg, var(--accent) 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .feature-card button:hover {
+            transform: scale(1.05);
+        }
+
+        .feature-card button:active {
+            transform: scale(0.95);
+        }
+
+        .ai-summary {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            white-space: pre-line;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .similar-results {
+            margin-top: 15px;
+        }
+
+        .similar-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .similar-item h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .similar-item .similarity-score {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .charts-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .chart-toolbar button {
+            background: #f1f3f5;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .chart-toolbar button:hover {
+            background: #e9ecef;
+        }
+
+        .active-filter {
+            font-size: 0.95rem;
+            color: #495057;
+        }
+
+        .charts-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 16px;
+        }
+
+        .chart-container {
+            min-height: 380px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Table enhancements */
+        table.si2a-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.si2a-table thead th {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        table.si2a-table tbody td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        table.si2a-table tbody tr:nth-child(even) {
+            background: rgba(0,0,0,0.03);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .badge-critical { background: var(--critical); }
+        .badge-high { background: var(--high); }
+        .badge-medium { background: var(--medium); color: #333; }
+        .badge-low { background: var(--low); }
+        .status-icon { margin-right: 6px; }
+        .risk-pill {
+            display: inline-block;
+            min-width: 56px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .risk-min { background: #6c757d; }
+        .risk-low { background: #28a745; }
+        .risk-med { background: #ffc107; color: #333; }
+        .risk-high { background: #fd7e14; }
+        .risk-crit { background: #dc3545; }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-open { background-color: #dc3545; }
+        .status-resolved { background-color: #28a745; }
+        .status-in-progress { background-color: #ffc107; }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-shield-alt"></i> SI²A Dashboard</h1>
+                <p>Shadow IT Incident Autopilot - Powered by BigQuery AI</p>
+            </div>
+            <div>
+                <span style="margin-right:8px;">Role: <strong id="role-badge">VIEWER</strong></span>
+                <select id="role-select" title="Simulate role" style="margin-right:8px;">
+                    <option value="viewer">viewer</option>
+                    <option value="analyst">analyst</option>
+                    <option value="admin">admin</option>
+                </select>
+                <button id="toggle-dark" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+            </div>
+        </div>
+
+        <!-- Real-time Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Open Incidents</h3>
+                <div class="metric-value" id="open-incidents-count">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="metric-label">Currently Active</div>
+            </div>
+            
+            <div class="metric-card">
+                <h3><i class="fas fa-clock"></i> Average MTTR</h3>
+                <div class="metric-value" id="avg-mttr">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="metric-label">Hours to Resolve</div>
+            </div>
+            
+            <div class="metric-card">
+                <h3><i class="fas fa-chart-line"></i> Risk Score</h3>
+                <div class="metric-value" id="avg-risk-score">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="metric-label">Average Risk Level</div>
+            </div>
+            
+            <div class="metric-card">
+                <h3><i class="fas fa-users"></i> Total Incidents</h3>
+                <div class="metric-value" id="total-incidents">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="metric-label">All Time</div>
+            </div>
+        </div>
+
+        <!-- AI-Powered Features -->
+        <div class="ai-features">
+            <h2><i class="fas fa-robot"></i> AI-Powered Analysis</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-file-alt"></i> Executive Summary Generator</h3>
+                    <select id="incident-selector">
+                        <option>Select Incident...</option>
+                    </select>
+                    <button onclick="generateSummary()">
+                        <i class="fas fa-magic"></i> Generate Summary
+                    </button>
+                    <div id="summary-output"></div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-search"></i> Similar Incident Finder</h3>
+                    <input type="text" id="query-input" placeholder="Describe the incident...">
+                    <button onclick="findSimilar()">
+                        <i class="fas fa-search"></i> Find Similar
+                    </button>
+                    <div id="similar-results"></div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-check-circle"></i> Policy Compliance Check</h3>
+                    <select id="compliance-incident-selector">
+                        <option>Select Incident...</option>
+                    </select>
+                    <button onclick="checkCompliance()">
+                        <i class="fas fa-shield-check"></i> Check Compliance
+                    </button>
+                    <div id="compliance-output"></div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-chart-area"></i> Risk Trend Analysis</h3>
+                    <button onclick="loadTrends()">
+                        <i class="fas fa-chart-line"></i> Load Trends
+                    </button>
+                    <div id="trends-output"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Charts -->
+        <div class="charts-section">
+            <h2><i class="fas fa-chart-bar"></i> Analytics Dashboard</h2>
+            <div class="chart-toolbar">
+                <button id="reset-filters" title="Clear all chart filters">
+                    <i class="fas fa-rotate-left"></i> Reset Filters
+                </button>
+                <div id="active-filter-label" class="active-filter"></div>
+            </div>
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h3>Incident Severity Distribution</h3>
+                    <div id="severity-chart" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading chart...</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Risk Score Distribution</h3>
+                    <div id="risk-distribution" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading chart...</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Resolution Time by Severity</h3>
+                    <div id="resolution-chart" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading chart...</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Daily Incident Trends</h3>
+                    <div id="trends-chart" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading chart...</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Incident Forecast</h3>
+                    <div id="forecast-chart" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading chart...</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Anomaly Detection</h3>
+                    <div id="anomaly-chart" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading chart...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Incidents Table -->
+        <div class="charts-section">
+            <h2><i class="fas fa-list"></i> Recent Incidents</h2>
+            <div class="chart-toolbar" style="margin-top:-8px; margin-bottom:8px;">
+                <div>
+                    <button class="severity-chip" data-sev="critical" title="Filter Critical">🔴 Critical</button>
+                    <button class="severity-chip" data-sev="high" title="Filter High">🟠 High</button>
+                    <button class="severity-chip" data-sev="medium" title="Filter Medium">🟡 Medium</button>
+                    <button class="severity-chip" data-sev="low" title="Filter Low">🟢 Low</button>
+                </div>
+                <div id="table-filter-label" class="active-filter"></div>
+            </div>
+            <div id="incidents-table" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading incidents...</p>
+            </div>
+        </div>
+        <!-- Evidence and Feedback -->
+        <div class="ai-features">
+            <h2><i class="fas fa-database"></i> Evidence and Feedback</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-folder-open"></i> Evidence (Object References)</h3>
+                    <select id="evidence-incident-selector">
+                        <option>Select Incident...</option>
+                    </select>
+                    <div style="display:flex; gap:8px; margin-bottom:10px;">
+                        <input type="text" id="evidence-uri" placeholder="gs://bucket/path or https://...">
+                        <input type="text" id="evidence-type" placeholder="Type (log, screenshot, doc)">
+                    </div>
+                    <input type="text" id="evidence-description" placeholder="Short description">
+                    <input type="text" id="evidence-tags" placeholder="Tags (comma separated)">
+                    <div style="display:flex; gap:8px;">
+                        <button id="load-evidence-btn"><i class="fas fa-rotate"></i> Load Evidence</button>
+                        <button id="add-evidence-btn"><i class="fas fa-plus"></i> Add Evidence</button>
+                    </div>
+                    <div id="evidence-list" class="similar-results" style="margin-top:12px;"></div>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-comment-dots"></i> AI Feedback</h3>
+                    <select id="feedback-incident-selector">
+                        <option>Select Incident...</option>
+                    </select>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+                        <div>
+                            <label>Quality</label>
+                            <select id="fb-quality">
+                                <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Accuracy</label>
+                            <select id="fb-accuracy">
+                                <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Usefulness</label>
+                            <select id="fb-usefulness">
+                                <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <textarea id="fb-text" rows="3" style="width:100%; margin-top:8px;" placeholder="Optional comments"></textarea>
+                    <button id="submit-feedback-btn" style="margin-top:8px;"><i class="fas fa-paper-plane"></i> Submit Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>

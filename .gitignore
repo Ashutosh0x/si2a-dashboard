@@ -1,0 +1,15 @@
+﻿.venv/
+__pycache__/
+*.pyc
+.notebook*
+notebooks/
+data/
+kaggle.json
+*.log
+*.ipynb
+*.bat
+docker-compose*.yml
+.env
+*.local
+sql/*.sql
+!sql/01_ddl_tables_fixed.sql
