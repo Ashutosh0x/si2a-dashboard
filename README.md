@@ -1,5 +1,9 @@
 # Shadow IT Incident Autopilot (SI²A) 🚀
 
+
+https://github.com/user-attachments/assets/5bee8a96-622c-43f9-a30a-f275cb1166ee
+
+
 ## Project Overview
 
 **SI²A** transforms messy enterprise security evidence into intelligent, automated incident triage using BigQuery's cutting-edge AI capabilities. This solution addresses the critical problem of slow, inconsistent security incident response by leveraging semantic search, generative AI, and multimodal data processing—all within BigQuery.
